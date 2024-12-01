@@ -1,0 +1,58 @@
+name: Deploy EC2 Instance
+
+on:
+  workflow_dispatch:
+    inputs:
+      ami:
+        description: 'AMI ID for EC2 instance'
+        required: true
+      instance_type:
+        description: 'EC2 Instance Type'
+        required: true
+      subnet_id:
+        description: 'Subnet ID for EC2 instance'
+        required: true
+      vpc_security_group_id:
+        description: 'Security Group ID for EC2 instance'
+        required: true
+
+jobs:
+  terraform:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the repository
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Set up Terraform
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          terraform_version: 1.5.7  # Use the desired Terraform version
+
+      # Configure AWS Credentials
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      # Initialize Terraform
+      - name: Terraform Init
+        run: terraform init
+
+      # Plan the Terraform deployment
+      - name: Terraform Plan
+        run: terraform plan -var="ami=${{ github.event.inputs.ami }}" \
+                            -var="instance_type=${{ github.event.inputs.instance_type }}" \
+                            -var="subnet_id=${{ github.event.inputs.subnet_id }}" \
+                            -var="vpc_security_group_id=${{ github.event.inputs.vpc_security_group_id }}"
+
+      # Apply the Terraform deployment
+      - name: Terraform Apply
+        run: terraform apply -auto-approve -var="ami=${{ github.event.inputs.ami }}" \
+                              -var="instance_type=${{ github.event.inputs.instance_type }}" \
+                              -var="subnet_id=${{ github.event.inputs.subnet_id }}" \
+                              -var="vpc_security_group_id=${{ github.event.inputs.vpc_security_group_id }}"
