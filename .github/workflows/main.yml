@@ -45,10 +45,13 @@ jobs:
 
       # Plan the Terraform deployment
       - name: Terraform Plan
-        run: terraform plan -var="ami=${{ github.event.inputs.ami }}" \
-                            -var="instance_type=${{ github.event.inputs.instance_type }}" \
-                            -var="subnet_id=${{ github.event.inputs.subnet_id }}" \
-                            -var="vpc_security_group_id=${{ github.event.inputs.vpc_security_group_id }}"
+        run: |
+          terraform plan \
+            -var="ami=${{ github.event.inputs.ami }}" \
+            -var="instance_type=${{ github.event.inputs.instance_type }}" \
+            -var="subnet_id=${{ github.event.inputs.subnet_id }}" \
+            -var="vpc_security_group_id=${{ github.event.inputs.vpc_security_group_id }}"
+
 
       # Apply the Terraform deployment
       - name: Terraform Apply
